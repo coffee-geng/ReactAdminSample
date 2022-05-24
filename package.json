@@ -1,0 +1,49 @@
+{
+  "name": "react-app_blank",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@ant-design/icons": "^4.7.0",
+    "antd": "3",
+    "axios": "^0.27.2",
+    "babel-plugin-import": "^1.13.5",
+    "customize-cra": "^1.0.0",
+    "draftjs-to-html": "^0.9.1",
+    "jsonp": "^0.2.1",
+    "less": "3.9",
+    "less-loader": "5",
+    "react": "^16.8.6",
+    "react-app-rewired": "^2.2.1",
+    "react-dom": "^16.8.6",
+    "react-draft-wysiwyg": "^1.14.7",
+    "react-router-dom": "5",
+    "react-scripts": "3.0.1",
+    "resolve-url-loader": "3.1",
+    "store": "^2.0.12"
+  },
+  "scripts": {
+    "start": "set BROWSER=chrome&& react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "webpack-cli": "^4.9.2"
+  },
+  "proxy": "http://localhost:5000"
+}
