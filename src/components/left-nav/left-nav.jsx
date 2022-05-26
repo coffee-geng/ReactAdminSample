@@ -1,11 +1,15 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 import { Link, withRouter } from 'react-router-dom'
 
 import { Menu, Icon } from 'antd';
 
 import menuConfig from '../../config/menuConfig'
-import memoryUtils from '../../utils/memoryUtils'
-import storageUtils from '../../utils/storageUtils';
+import menuList from '../../config/menuConfig'
+
+import { connect } from 'react-redux';
+import { setHeaderTitle } from '../../redux/actions';
+
 
 import logo from '../../assets/images/logo.png'
 import './left-nav.less'
@@ -14,8 +18,14 @@ const SubMenu = Menu.SubMenu
 
 class LeftNav extends Component {
 
+  static propTypes = {
+    headerTitle: PropTypes.string,
+    setHeaderTitle: PropTypes.func.isRequired,
+    user:PropTypes.object
+  }
+
   hasPrivilege(menuItem) {
-    const currentUser = memoryUtils.user || {}
+    const currentUser = this.props.user || {}
     const currentRole = currentUser.role
     if (!currentRole) {
       return false
@@ -38,6 +48,27 @@ class LeftNav extends Component {
         return false
       }
     }
+  }
+
+  getTitle = (path) => {
+    let title
+    menuList.forEach(item => {
+      if (path === item.key) {
+        title = item.title
+      }
+      else {
+        if (path.indexOf(item.key) === 0) {
+          title = item.title
+        }
+        if (item.children) {
+          const cItem = item.children.find(cItem => path.indexOf(cItem.key) === 0)
+          if (cItem) {
+            title = cItem.title
+          }
+        }
+      }
+    })
+    return title
   }
 
   getMenuNodes_map(menuList) {
@@ -84,8 +115,7 @@ class LeftNav extends Component {
     const path = this.props.location.pathname
 
     return menuList.reduce((pre, item) => {
-      if (this.hasPrivilege(item))
-      {
+      if (this.hasPrivilege(item)) {
         if (!item.children) {
           pre.push(
             (
@@ -130,6 +160,22 @@ class LeftNav extends Component {
 
   componentWillMount() {
     this.menuNodes = this.getMenuNodes_reduce(menuConfig)
+  }
+
+  componentDidMount() {
+    this.props.history.listen(location => {
+      const title = this.getTitle(location.pathname)
+      if (title)
+      {
+        this.props.setHeaderTitle(title)
+      }
+    })
+    const {location} = this.props
+    const title = this.getTitle(location.pathname)
+    if (title)
+    {
+      this.props.setHeaderTitle(title)
+    }
   }
 
   render() {
@@ -183,4 +229,10 @@ class LeftNav extends Component {
   }
 }
 
-export default withRouter(LeftNav)
+export default connect(
+  state => ({ 
+    title: state.headerTitle,
+    user: state.currentUser
+   }),
+  { setHeaderTitle }
+)(withRouter(LeftNav))

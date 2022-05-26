@@ -4,12 +4,12 @@ import { Card, Table, Button, Modal, message } from 'antd'
 import { formateDate } from '../../utils/dateUtils'
 import { PAGE_SIZE } from '../../config/constant'
 import { reqRoles, reqAddRole, reqUpdateRole } from '../../api'
-import memoryUtils from '../../utils/memoryUtils'
 import AddForm from './add-form'
 import AuthForm from './auth-form'
-import storageUtils from '../../utils/storageUtils'
+import { logout } from '../../redux/actions'
+import { connect } from 'react-redux'
 
-export default class Role extends Component {
+class Role extends Component {
 
   state = {
     roles: [], //所有角色的列表
@@ -80,14 +80,14 @@ export default class Role extends Component {
     const {selectedRole} = this.state
     selectedRole.menus = menus
     selectedRole.auth_time = Date.now()
-    selectedRole.auth_name = memoryUtils.user.username
+    const currentUser = this.props.user
+    selectedRole.auth_name = currentUser.username
     const result = await reqUpdateRole(selectedRole)
     if (result.status === 0){
       //如果是对当前用户所属权限进行设置，则需强制退出登录
-      if (selectedRole._id === memoryUtils.user.role_id){
+      if (selectedRole._id === currentUser.role_id){
         message.success('当前登录用户的角色权限被修改了，系统将强制退出登录！')
-        memoryUtils.user = null
-        storageUtils.removeUser()
+        this.props.resetUser()
         this.props.history.replace('/login')
       }
       else{
@@ -149,3 +149,8 @@ export default class Role extends Component {
     )
   }
 }
+
+export default connect(
+  state=>({user: state.currentUser}),
+  {logout}
+)(Role)

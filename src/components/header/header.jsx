@@ -1,21 +1,29 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 import { withRouter } from 'react-router-dom'
 import { Modal } from 'antd';
 import { reqWeather } from '../../api'
 import {formateDate} from '../../utils/dateUtils'
-import memoryUtils from '../../utils/memoryUtils'
 import weatherList from '../../config/weatherConfig'
 import menuList from '../../config/menuConfig'
 import LinkButton from '../../components/link-button/link-button'
 
 import './header.less'
-import storageUtils from '../../utils/storageUtils';
+
+import {connect} from 'react-redux'
+import {logout, setHeaderTitle} from '../../redux/actions'
 
 class Header extends Component {
 
+  static propTypes = {
+    headerTitle: PropTypes.string,
+    setHeaderTitle: PropTypes.func.isRequired,
+    logout: PropTypes.func.isRequired
+  }
+
   state = {
     currentTime: formateDate( Date.now()),
-    daayPictureUrl: '', //天气图片的url
+    dayPictureUrl: '', //天气图片的url
     weather: '' //天气的文本
   }
 
@@ -30,7 +38,7 @@ class Header extends Component {
     const weatherItem = weatherList.find(itm=>itm.name === weather)
     if(!!weatherItem)
     {
-      this.setState({daayPictureUrl: weatherItem.url, weather})
+      this.setState({dayPictureUrl: weatherItem.url, weather})
     }
   }
 
@@ -56,8 +64,7 @@ class Header extends Component {
       title: '确定退出吗？',
       content:'确定退出吗？',
       onOk:()=>{
-        memoryUtils.user = {}
-        storageUtils.removeUser()
+        this.props.logout()
 
         this.props.history.replace('/login')
       }
@@ -74,9 +81,10 @@ class Header extends Component {
   }
 
   render() {
-    const {currentTime, daayPictureUrl, weather} = this.state
-    const username = memoryUtils.user.username
-    const title = this.getTitle()
+    const {currentTime, dayPictureUrl, weather} = this.state
+    const username = this.props.user.username
+    // const title = this.getTitle()
+    const title = this.props.headerTitle
 
     return (
       <div className='header'>
@@ -90,7 +98,7 @@ class Header extends Component {
           </div>
           <div className='header-bottom-right'>
             <span>{currentTime}</span>
-            <img src={daayPictureUrl} alt="" />
+            <img src={dayPictureUrl} alt="" />
             <span>{weather}</span>
           </div>
         </div>
@@ -99,4 +107,20 @@ class Header extends Component {
   }
 }
 
-export default withRouter(Header)
+function mapStateToProps(state){
+  return {
+    headerTitle: state.headerTitle,
+    user: state.currentUser
+  }
+}
+
+function mapDispatchToProps(dispatch){
+  return {
+    setHeaderTitle: (title)=>dispatch(setHeaderTitle(title)),
+    logout:()=>dispatch(logout())
+  }
+}
+
+export default connect(
+    mapStateToProps, mapDispatchToProps
+  )(withRouter(Header))

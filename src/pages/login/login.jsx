@@ -1,14 +1,15 @@
 import React, { Component } from 'react'
+import { connect } from 'react-redux'
 
 import { Form, Input, Icon, Button, message } from 'antd'
 
 import {reqLogin} from '../../api'
-import memoryUtils from '../../utils/memoryUtils'
 import storageUtils from '../../utils/storageUtils'
 
 import './login.less'
 import logo from '../../assets/images/logo.png'
 import { Redirect } from 'react-router-dom'
+import { loginAsync } from '../../redux/actions'
 
 const FormItem = Form.Item
 
@@ -21,22 +22,9 @@ class Login extends Component {
         form.validateFields(async (err, values)=>{
             if (!err){
                 const {username, password} = values
-                const result = await reqLogin(username, password)
-                if (result.status === 0){
-                    message.success('登录成功')
-
-                    const user = result.data
-                    memoryUtils.user = user
-                    storageUtils.saveUser(user)
-
-                    this.props.history.replace('/')
-                }
-                else{
-                    message.error(result.msg)
-                }
+                this.props.loginAsync(username, password)                
             }
         })
-        
     }
 
     validatePwd = (rule, value, callback)=>{
@@ -57,9 +45,16 @@ class Login extends Component {
         }
     }
 
+    componentDidUpdate(){
+        const user = this.props.user
+        if (user && user._id){
+            message.success('登录成功')
+        }
+    }
+
   render() {
     //如果用户已经登录，自动跳转到管理页面
-    const user = memoryUtils.user
+    const user = this.props.user
     if (user && user._id){
         return <Redirect to='/' />
     }
@@ -73,6 +68,7 @@ class Login extends Component {
             <h1>React项目：后台管理系统</h1>
           </header>
           <section className='login-content'>
+              <div className={user.errorMsg ? 'error-message show' : 'error-message'}>{user.errorMsg}</div>
               <h2>用户登陆</h2>
               <Form className='login-form' onSubmit={this.handleSubmit}>
                   <FormItem>
@@ -111,4 +107,7 @@ class Login extends Component {
 }
 
 const WrapLogin = Form.create()(Login)
-export default WrapLogin
+export default connect(
+    state=>({user: state.currentUser}),
+    {loginAsync}
+)(WrapLogin)
