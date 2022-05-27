@@ -1,9 +1,65 @@
 import React, { Component } from 'react'
+import ReactEcharts from 'echarts-for-react'
+import { Card, Button } from 'antd'
 
 export default class Line extends Component {
+
+state = {
+  sales: [5, 20, 36, 10, 10, 20],
+  stocks: [5, 20, 36, 10, 10, 20]
+}
+
+  getOption = (sales, stocks)=>{
+    var option = {
+      title: {
+        text: 'ECharts 入门示例'
+      },
+      tooltip: {},
+      legend: {
+        data: ['销量', '库存']
+      },
+      xAxis: {
+        data: ['衬衫', '羊毛衫', '雪纺衫', '裤子', '高跟鞋', '袜子']
+      },
+      yAxis: {},
+      series: [
+        {
+          name: '销量',
+          type: 'line',
+          data: sales
+        },
+        {
+          name: '库存',
+          type: 'line',
+          data: stocks
+        }
+      ]
+    };
+    return option
+  }
+
+  update = ()=>{
+    this.setState(state=>({
+      sales: state.sales.map(sale=>sale+1),
+      stocks: state.stocks.reduce((pre,stock)=>{
+        pre.push(stock - 1)
+        return pre
+      },[])
+    }))
+  }
+
   render() {
+    const {sales, stocks} = this.state
+
     return (
-      <div>折线图</div>
+      <div>
+        <Card>
+          <Button type='primary' onClick={this.update}>更新</Button>
+        </Card>
+        <Card title='折线图二'>
+          <ReactEcharts option={this.getOption(sales, stocks)} style={{ height: 300 }} />
+        </Card>
+      </div>
     )
   }
 }
